@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-status-exporter
+  namespace: monitoring
+  labels:
+    app: cloudflare-status-exporter
+spec:
+  progressDeadlineSeconds: 120
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflare-status-exporter
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: cloudflare-status-exporter
+    spec:
+      containers:
+      - name: cloudflare-status-exporter
+        image: justonecommand/cloudflare-status-exporter:latest
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: 100m
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 12
+          timeoutSeconds: 2

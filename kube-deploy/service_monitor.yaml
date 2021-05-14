@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: cloudflare-status-exporter
+  name: cloudflare-status-exporter
+  namespace: monitoring
+spec:
+  endpoints:
+  - interval: 1m
+    port: http
+  namespaceSelector:
+    matchNames:
+    - monitoring
+  selector:
+    matchLabels:
+      app: cloudflare-status-exporter

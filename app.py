@@ -18,7 +18,7 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': os.environ.get('LOG_LEVEL', 'INFO'),
         'handlers': ['wsgi']
     }
 })
@@ -77,21 +77,42 @@ by_path_counter = metrics.counter(
     'by_path_counter', 'Request count by request paths',
     labels={'path': lambda: request.path}
 )
-
-CLOUDFLARE_SUMMARY = 'https://yh6f0r4529hb.statuspage.io/api/v2/summary.json'
-CLOUDFLARE_STATUS = 'https://yh6f0r4529hb.statuspage.io/api/v2/status.json'
-CLOUDFLARE_COMPONENTS = 'https://yh6f0r4529hb.statuspage.io/api/v2/components.json'
-CLOUDFLARE_UNRESOLVED_INCIDENTS = 'https://yh6f0r4529hb.statuspage.io/api/v2/incidents/unresolved.json'
-CLOUDFLARE_ALL_INCIDENTS = 'https://yh6f0r4529hb.statuspage.io/api/v2/incidents.json'
-CLOUDFLARE_SCHEDUALED_MAINTENANCES = 'https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances/upcoming.json'
-CLOUDFLARE_ACTIVE_MAINTENANCES = 'https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances/active.json'
-CLOUDFLARE_ALL_MAINTENANCES = 'https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances.json'
+# status data endpoints
+CLOUDFLARE_SUMMARY = os.environ.get('CLOUDFLARE_SUMMARY', 'https://yh6f0r4529hb.statuspage.io/api/v2/summary.json')
+CLOUDFLARE_STATUS = os.environ.get('CLOUDFLARE_STATUS', 'https://yh6f0r4529hb.statuspage.io/api/v2/status.json')
+CLOUDFLARE_COMPONENTS = os.environ.get('CLOUDFLARE_COMPONENTS', 'https://yh6f0r4529hb.statuspage.io/api/v2/components.json')
+CLOUDFLARE_UNRESOLVED_INCIDENTS = os.environ.get('CLOUDFLARE_UNRESOLVED_INCIDENTS', 'https://yh6f0r4529hb.statuspage.io/api/v2/incidents/unresolved.json')
+CLOUDFLARE_ALL_INCIDENTS = os.environ.get('CLOUDFLARE_ALL_INCIDENTS', 'https://yh6f0r4529hb.statuspage.io/api/v2/incidents.json')
+CLOUDFLARE_SCHEDUALED_MAINTENANCES = os.environ.get('CLOUDFLARE_SCHEDUALED_MAINTENANCES', 'https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances/upcoming.json')
+CLOUDFLARE_ACTIVE_MAINTENANCES = os.environ.get('CLOUDFLARE_ACTIVE_MAINTENANCES', 'https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances/active.json')
+CLOUDFLARE_ALL_MAINTENANCES = os.environ.get('CLOUDFLARE_ALL_MAINTENANCES', 'https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances.json')
+# impact env variables
+STATUS_IMPACT_NONE_GAUGE_VAULE = float(os.environ.get('STATUS_IMPACT_NONE_GAUGE_VAULE', 1.0))
+STATUS_IMPACT_MINOR_GAUGE_VAULE = float(os.environ.get('STATUS_IMPACT_MINOR_GAUGE_VAULE', 0.66))
+STATUS_IMPACT_MAJOR_GAUGE_VAULE = float(os.environ.get('STATUS_IMPACT_MAJOR_GAUGE_VAULE', 0.33))
+STATUS_IMPACT_CRITICAL_GAUGE_VAULE = float(os.environ.get('STATUS_IMPACT_CRITICAL_GAUGE_VAULE', 0.0))
+# components env variables
+STATUS_COMPONENTS_OPERATIONAL_GAUGE_VAULE = float(os.environ.get('STATUS_COMPONENTS_OPERATIONAL_GAUGE_VAULE', 1.0))
+STATUS_COMPONENTS_DEGRADED_PERFORMANCE_GAUGE_VAULE = float(os.environ.get('STATUS_COMPONENTS_DEGRADED_PERFORMANCE_GAUGE_VAULE', 0.66))
+STATUS_COMPONENTS_PARTIAL_OUTAGE_GAUGE_VAULE = float(os.environ.get('STATUS_COMPONENTS_PARTIAL_OUTAGE_GAUGE_VAULE', 0.33))
+STATUS_COMPONENTS_MAJOR_OUTAGE_GAUGE_VAULE = float(os.environ.get('STATUS_COMPONENTS_MAJOR_OUTAGE_GAUGE_VAULE', 0.0))
+# incidents env variables
+STATUS_INCIDENTS_INVESTIGATING_GAUGE_VAULE = float(os.environ.get('STATUS_INCIDENTS_INVESTIGATING_GAUGE_VAULE', 1.0))
+STATUS_INCIDENTS_IDENTIFIED_GAUGE_VAULE = float(os.environ.get('STATUS_INCIDENTS_IDENTIFIED_GAUGE_VAULE', 1.0))
+STATUS_INCIDENTS_MONITORING_GAUGE_VAULE = float(os.environ.get('STATUS_INCIDENTS_MONITORING_GAUGE_VAULE', 1.0))
+STATUS_INCIDENTS_RESOLVED_GAUGE_VAULE = float(os.environ.get('STATUS_INCIDENTS_RESOLVED_GAUGE_VAULE', 0.0))
+STATUS_INCIDENTS_POSTMORTEM_GAUGE_VAULE = float(os.environ.get('STATUS_INCIDENTS_POSTMORTEM_GAUGE_VAULE', 0.0))
+# maintenance env variables
+STATUS_MAINTENANCE_SCHEDULED_GAUGE_VAULE = float(os.environ.get('STATUS_MAINTENANCE_SCHEDULED_GAUGE_VAULE', 1.0))
+STATUS_MAINTENANCE_IN_PROGRESS_GAUGE_VAULE = float(os.environ.get('STATUS_MAINTENANCE_IN_PROGRESS_GAUGE_VAULE', 1.0))
+STATUS_MAINTENANCE_VERIFYING_GAUGE_VAULE = float(os.environ.get('STATUS_MAINTENANCE_VERIFYING_GAUGE_VAULE', 1.0))
+STATUS_MAINTENANCE_COMPLETED_GAUGE_VAULE = float(os.environ.get('STATUS_MAINTENANCE_COMPLETED_GAUGE_VAULE', 0.0))
 
 # Which status endpoints you would like to export to the metrics endpoint in a comma seperated list
 # For example:
 # CLOUDFLARE_STATUS_OUTPUT = 'status,unresolved_incidents'
 # Available options: summary, status, components, unresolved_incidents, all_incidents, schedualed_maintenance, active_maintenance, all_maintenance
-CLOUDFLARE_STATUS_OUTPUT = 'status,components'
+CLOUDFLARE_STATUS_OUTPUT = os.environ.get('CLOUDFLARE_STATUS_OUTPUT', 'status')
 
 status_endpoints = []
 
@@ -180,24 +201,24 @@ def generate_metrics():
 def get_status_value(status):
     return {
         #impact
-        'none' : 1,
-        'minor' : 0.66,
-        'major' : 0.33,
-        'critical' : 0.0,
+        'none' : STATUS_IMPACT_NONE_GAUGE_VAULE,
+        'minor' : STATUS_IMPACT_MINOR_GAUGE_VAULE,
+        'major' : STATUS_IMPACT_MAJOR_GAUGE_VAULE,
+        'critical' : STATUS_IMPACT_CRITICAL_GAUGE_VAULE,
         #components
-        'operational': 1,
-        'degraded_performance': 0.66,
-        'partial_outage': 0.33,
-        'major_outage': 0.0,
+        'operational': STATUS_COMPONENTS_OPERATIONAL_GAUGE_VAULE,
+        'degraded_performance': STATUS_COMPONENTS_DEGRADED_PERFORMANCE_GAUGE_VAULE,
+        'partial_outage': STATUS_COMPONENTS_PARTIAL_OUTAGE_GAUGE_VAULE,
+        'major_outage': STATUS_COMPONENTS_MAJOR_OUTAGE_GAUGE_VAULE,
         #incidents
-        'investigating' : 1.0,
-        'identified' : 1.0,
-        'monitoring' : 1.0,
-        'resolved' : 0.0,
-        'postmortem' : 0.0,
+        'investigating' : STATUS_INCIDENTS_INVESTIGATING_GAUGE_VAULE,
+        'identified' : STATUS_INCIDENTS_IDENTIFIED_GAUGE_VAULE,
+        'monitoring' : STATUS_INCIDENTS_MONITORING_GAUGE_VAULE,
+        'resolved' : STATUS_INCIDENTS_RESOLVED_GAUGE_VAULE,
+        'postmortem' : STATUS_INCIDENTS_POSTMORTEM_GAUGE_VAULE,
         #maintenance
-        'scheduled' : 1.0,
-        'in_progress' : 1.0,
-        'verifying' : 1.0,
-        'completed' : 0.0,
+        'scheduled' : STATUS_MAINTENANCE_SCHEDULED_GAUGE_VAULE,
+        'in_progress' : STATUS_MAINTENANCE_IN_PROGRESS_GAUGE_VAULE,
+        'verifying' : STATUS_MAINTENANCE_VERIFYING_GAUGE_VAULE,
+        'completed' : STATUS_MAINTENANCE_COMPLETED_GAUGE_VAULE,
     }.get(status)

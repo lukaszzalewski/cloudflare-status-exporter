@@ -22,12 +22,15 @@ docker run -p 8000:8000 justonecommand/cloudflare-status-exporter:latest
 Which status endpoints you would like to export to prometheus. The list is comma seperated with no spaces
 For example:
 CLOUDFLARE_STATUS_OUTPUT='status,components,unresolved_incidents'
+Available options: summary, status, components, unresolved_incidents, all_incidents, schedualed_maintenance, active_maintenance, all_maintenance
+
 | Env Var | Default |
 |---| --- |
-| CLOUDFLARE_STATUS_OUTPUT | status |
+| CLOUDFLARE_STATUS_OUTPUT | status  
 
 ### Status endpoint targets
 The urls of the varous json files that provide the current status of cloudflare
+
 | Env Var | Default |
 |---| --- |
 | CLOUDFLARE_SUMMARY | https://yh6f0r4529hb.statuspage.io/api/v2/summary.json
@@ -40,7 +43,7 @@ The urls of the varous json files that provide the current status of cloudflare
 | CLOUDFLARE_ALL_MAINTENANCES | https://yh6f0r4529hb.statuspage.io/api/v2/scheduled-maintenances.json
 
 ## Gauge translation values
-All the values that the status endpoints have get translated into Gauges. Impact and components will show between 1.0(up) and 0.0(down) depending on the severity of the issues. Incidents and Maintenance will show a 1.0 if the event in question is not resolved. It will show 0.0 is it is resolved. All of these are changeable.
+All the values that the status endpoints get translated into Gauges. Impact and components will show between 1.0(up) and 0.0(down) depending on the severity of the issues. Incidents and Maintenance will show a 1.0 if the event in question is not resolved. It will show 0.0 is it is resolved. All of these are changeable.
 ### impact env variables
 | Env Var | Default |
 |---| --- |
